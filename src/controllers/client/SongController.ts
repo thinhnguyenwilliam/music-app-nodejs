@@ -22,4 +22,30 @@ export class SongController {
             }
         }
     }
+
+    static async detail(req: Request, res: Response): Promise<void> {
+        const { slugSong } = req.params; // Get the slugSong from the route parameters
+
+        try {
+            // Call the service layer to fetch song, singer, and topic details
+            const { song, singer, topic } = await SongService.getSongDetails(slugSong);
+
+            // Send the response as JSON
+            res.status(200).json({
+                pageTitle: "Chi tiết bài hát",
+                song,
+                singer,
+                topic
+            });
+        } catch (error) {
+            // If an error occurs, send a JSON error response
+            if (error instanceof HttpError) {
+                res.status(error.statusCode).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: "An unexpected error occurred" });
+            }
+        }
+    }
+
+
 }

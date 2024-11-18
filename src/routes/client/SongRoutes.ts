@@ -5,6 +5,7 @@ const router = express.Router();
 
 // Song Routes
 router.get("/:slugTopic", SongController.viewSong);
+router.get("/detail/:slugSong", SongController.detail);
 
 
 export default router;

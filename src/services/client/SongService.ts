@@ -44,4 +44,25 @@ export class SongService {
             throw new HttpError("Failed to fetch songs or topic", 500, error);
         }
     }
+
+    // Method to get song details along with singer and topic information
+    static async getSongDetails(slugSong: string) {
+        try {
+            // Fetch the song based on slug and other filters
+            const song = await Song.findOne({ slug: slugSong, deleted: false, status: "active" });
+            if (!song) throw new HttpError("Song not found", 404);
+
+            // Fetch the singer details
+            const singer = await Singer.findOne({ _id: song.singerId }).select("fullName");
+            if (!singer) throw new HttpError("Singer not found", 404);
+
+            // Fetch the topic details
+            const topic = await Topic.findOne({ _id: song.topicId }).select("title");
+            if (!topic) throw new HttpError("Topic not found", 404);
+
+            return { song, singer, topic }; // Return combined data
+        } catch (error) {
+            throw error; // Rethrow any error for handling in the controller
+        }
+    }
 }
