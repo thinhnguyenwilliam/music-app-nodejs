@@ -65,4 +65,42 @@ export class SongService {
             throw error; // Rethrow any error for handling in the controller
         }
     }
+
+    // Update song likes or dislikes
+    static async updateLikeStatus(id: string, status: "like" | "dislike") {
+        try {
+            // Find the song
+            const song = await Song.findOne({
+                _id: id,
+                deleted: false,
+                status: "active",
+            });
+
+            if (!song) {
+                throw new HttpError("Song not found or inactive", 404);
+            }
+
+            // Update the like count
+            let updatedLikeCount = song.like;
+            if (status === "like") {
+                updatedLikeCount++;
+            } else if (status === "dislike") {
+                updatedLikeCount--;
+            }
+
+            // Save the updated like count
+            await Song.updateOne(
+                { _id: id, deleted: false, status: "active" },
+                { like: updatedLikeCount }
+            );
+
+            return {
+                success: true,
+                like: updatedLikeCount,
+            };
+        } catch (error) {
+            if (error instanceof HttpError) throw error;
+            throw new HttpError("Failed to update likes", 500, error);
+        }
+    }
 }

@@ -47,5 +47,26 @@ export class SongController {
         }
     }
 
+    // Controller for updating likes
+    static async likePatch(req: Request, res: Response): Promise<void> {
+        try {
+            const { id, status } = req.body;
 
+            // Call the service method
+            const result = await SongService.updateLikeStatus(id, status);
+
+            res.status(200).json({
+                code: "success",
+                like: result.like,
+            });
+        } catch (error) {
+            const statusCode = error instanceof HttpError ? error.statusCode : 500;
+            const message = error instanceof HttpError ? error.message : "An error occurred";
+
+            res.status(statusCode).json({
+                code: "error",
+                message,
+            });
+        }
+    }
 }
