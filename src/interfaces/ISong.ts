@@ -17,4 +17,5 @@ export interface ISong extends Document {
     createdAt: Date;
     updatedAt: Date;
     singerFullName?: string;
+    favorite?: boolean;
 }

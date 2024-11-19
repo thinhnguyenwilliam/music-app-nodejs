@@ -25,10 +25,11 @@ export class SongController {
 
     static async detail(req: Request, res: Response): Promise<void> {
         const { slugSong } = req.params; // Get the slugSong from the route parameters
+        const userId = "123"; //đang cho bừa
 
         try {
             // Call the service layer to fetch song, singer, and topic details
-            const { song, singer, topic } = await SongService.getSongDetails(slugSong);
+            const { song, singer, topic } = await SongService.getSongDetails(slugSong, userId);
 
             // Send the response as JSON
             res.status(200).json({
@@ -97,4 +98,25 @@ export class SongController {
         }
     }
 
+    // Get favorite songs for a user
+    static async favorite(req: Request, res: Response): Promise<void> {
+        try {
+            // Assuming userId is stored in res.locals from authentication middleware
+            const userId = "123"; // For testing, you can replace this with actual userId (e.g., from `res.locals.user.id`)
+
+            // Call the service method to get favorite songs
+            const songs = await SongService.getFavoriteSongs(userId);
+
+            // Return the songs data as a JSON response
+            res.status(200).json({
+                code: "success",
+                data: songs
+            });
+        } catch (error) {
+            res.status(500).json({
+                code: "error",
+                message: "Failed to fetch favorite songs",
+            });
+        }
+    }
 }

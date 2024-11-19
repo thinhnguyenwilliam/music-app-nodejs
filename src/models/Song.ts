@@ -19,6 +19,7 @@ const songSchema = new Schema<ISong>(
         },
         deletedAt: { type: Date, default: null },
         singerFullName: { type: String },
+        favorite: { type: Boolean },
     },
     {
         timestamps: true,

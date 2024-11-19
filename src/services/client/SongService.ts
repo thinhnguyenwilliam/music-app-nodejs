@@ -47,7 +47,7 @@ export class SongService {
     }
 
     // Method to get song details along with singer and topic information
-    static async getSongDetails(slugSong: string) {
+    static async getSongDetails(slugSong: string, userId: string) {
         try {
             // Fetch the song based on slug and other filters
             const song = await Song.findOne({ slug: slugSong, deleted: false, status: "active" });
@@ -61,11 +61,21 @@ export class SongService {
             const topic = await Topic.findOne({ _id: song.topicId }).select("title");
             if (!topic) throw new HttpError("Topic not found", 404);
 
+            // Check if the song is in the user's favorites
+            const existSongInFavorite = await FavoriteSong.findOne({
+                songId: song.id,
+                userId: userId // Use userId passed from controller
+            });
+
+            // Add the favorite status to the song object
+            song["favorite"] = existSongInFavorite ? true : false;
+
             return { song, singer, topic }; // Return combined data
         } catch (error) {
             throw error; // Rethrow any error for handling in the controller
         }
     }
+
 
     // Update song likes or dislikes
     static async updateLikeStatus(id: string, status: "like" | "dislike") {
@@ -130,6 +140,42 @@ export class SongService {
             }
         } catch (error) {
             throw new HttpError("Failed to toggle favorite status", 500, error);
+        }
+    }
+
+
+    // Method to get favorite songs for a user
+    static async getFavoriteSongs(userId: string) {
+        try {
+            // Fetch favorite songs based on the userId
+            const favoriteSongs = await FavoriteSong.find({
+                userId: userId // Ensure you're filtering by user if needed
+            });
+            
+
+            const songDetails = [];
+
+            // Loop through the favorite songs and gather song and singer info
+            for (const favorite of favoriteSongs) 
+            {
+                const infoSong = await Song.findOne({ _id: favorite.songId });
+                if (!infoSong) continue;
+
+                const infoSinger = await Singer.findOne({ _id: infoSong.singerId });
+
+                songDetails.push({
+                    songId: infoSong._id,
+                    title: infoSong.title,
+                    avatar: infoSong.avatar,
+                    singerFullName: infoSinger ? infoSinger.fullName : "",
+                    slug: infoSong.slug
+                });
+            }
+
+            //console.log(songDetails);
+            return songDetails;
+        } catch (error) {
+            throw new Error("Error fetching favorite songs");
         }
     }
 }
