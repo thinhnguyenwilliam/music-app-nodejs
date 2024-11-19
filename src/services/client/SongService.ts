@@ -1,6 +1,7 @@
 import { Song } from "../../models/Song";
 import { Singer } from "../../models/Singer";
 import { Topic } from "../../models/Topic";
+import { FavoriteSong } from "../../models/FavoriteSong ";
 import { HttpError } from "../../utils/HttpError"; // Optional: Custom error handling class
 
 
@@ -101,6 +102,34 @@ export class SongService {
         } catch (error) {
             if (error instanceof HttpError) throw error;
             throw new HttpError("Failed to update likes", 500, error);
+        }
+    }
+
+
+    // Toggle favorite status for a song
+    static async toggleFavorite(userId: string, songId: string) {
+        try {
+            // Check if the song exists and is active
+            const song = await Song.findOne({ _id: songId, deleted: false, status: "active" });
+            if (!song) {
+                throw new HttpError("Song not found or inactive", 404);
+            }
+
+            // Check if the song is already favorited by the user
+            const existingFavorite = await FavoriteSong.findOne({ userId, songId });
+
+            if (existingFavorite) {
+                // Remove the song from favorites
+                await FavoriteSong.deleteOne({ userId, songId });
+                return { action: "removed" }; // Indicate removal
+            } else {
+                // Add the song to favorites
+                const favorite = new FavoriteSong({ userId, songId });
+                await favorite.save();
+                return { action: "added" }; // Indicate addition
+            }
+        } catch (error) {
+            throw new HttpError("Failed to toggle favorite status", 500, error);
         }
     }
 }

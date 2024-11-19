@@ -7,6 +7,6 @@ const router = express.Router();
 router.get("/:slugTopic", SongController.viewSong);
 router.get("/detail/:slugSong", SongController.detail);
 router.patch("/like", SongController.likePatch);
-
+router.patch("/favorite", SongController.favoritePatch);
 
 export default router;

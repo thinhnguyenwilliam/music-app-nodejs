@@ -69,4 +69,32 @@ export class SongController {
             });
         }
     }
+
+    // Toggle favorite status for a song
+    static async favoritePatch(req: Request, res: Response): Promise<void> {
+        const { id: songId } = req.body;
+
+        try {
+            // Get the user ID from the authenticated session
+            const userId = "123";//cho bừa
+
+            // Call the service to toggle favorite status
+            const { action } = await SongService.toggleFavorite(userId, songId);
+
+            // Send response based on the action performed
+            if (action === "added") {
+                res.status(200).json({ message: "Song added to favorites" });
+            } else if (action === "removed") {
+                res.status(200).json({ message: "Song removed from favorites" });
+            }
+        } catch (error) {
+            if (error instanceof HttpError) {
+                res.status(error.statusCode).json({ message: error.message });
+            } else {
+                console.error("Unexpected error in favoritePatch:", error);
+                res.status(500).json({ message: "An unexpected error occurred" });
+            }
+        }
+    }
+
 }
