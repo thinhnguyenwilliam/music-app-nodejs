@@ -119,4 +119,29 @@ export class SongController {
             });
         }
     }
+
+
+    // Search songs by keyword
+    static async search(req: Request, res: Response): Promise<void> {
+        try {
+            const keyword = req.query.keyword as string; // Get the keyword from the query parameters
+
+            
+
+            // Call the service method to search for songs
+            const songs = await SongService.searchSongs(keyword);
+
+            // Return the songs data as a JSON response
+            res.status(200).json({
+                code: "success",
+                data: songs
+            });
+        } catch (error) {
+            // Handle errors and return a meaningful response
+            res.status(500).json({
+                code: "error",
+                message: error instanceof HttpError ? error.message : "An error occurred"
+            });
+        }
+    }
 }

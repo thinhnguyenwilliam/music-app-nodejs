@@ -3,7 +3,7 @@ import { Singer } from "../../models/Singer";
 import { Topic } from "../../models/Topic";
 import { FavoriteSong } from "../../models/FavoriteSong ";
 import { HttpError } from "../../utils/HttpError"; // Optional: Custom error handling class
-
+import unidecode from "unidecode";
 
 export class SongService {
     // Get songs by topic slug
@@ -151,13 +151,12 @@ export class SongService {
             const favoriteSongs = await FavoriteSong.find({
                 userId: userId // Ensure you're filtering by user if needed
             });
-            
+
 
             const songDetails = [];
 
             // Loop through the favorite songs and gather song and singer info
-            for (const favorite of favoriteSongs) 
-            {
+            for (const favorite of favoriteSongs) {
                 const infoSong = await Song.findOne({ _id: favorite.songId });
                 if (!infoSong) continue;
 
@@ -176,6 +175,34 @@ export class SongService {
             return songDetails;
         } catch (error) {
             throw new Error("Error fetching favorite songs");
+        }
+    }
+
+
+    // Search songs by keyword (slug)
+    static async searchSongs(keyword: string) {
+        try {
+            // Prepare the keyword for regex search
+            let keywordRegex = keyword.trim().replace(/\s+/g, "-");
+            keywordRegex = unidecode(keywordRegex);
+            const slugRegex = new RegExp(keywordRegex, "i");
+
+            // Find songs matching the keyword
+            const songs = await Song.find({
+                slug: slugRegex,
+                deleted: false, // Assuming you're only interested in non-deleted songs
+                status: "active" // Filter only active songs
+            }).select("slug avatar title like singerId");
+
+            // Add singerFullName to each song
+            for (const song of songs) {
+                const infoSinger = await Singer.findOne({ _id: song.singerId, deleted: false });
+                song["singerFullName"] = infoSinger ? infoSinger.fullName : "";
+            }
+
+            return songs; // Return the songs with added singerFullName
+        } catch (error) {
+            throw new HttpError("Error searching for songs", 500, error); // Handle errors appropriately
         }
     }
 }

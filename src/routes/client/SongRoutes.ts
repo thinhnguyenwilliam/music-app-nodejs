@@ -9,6 +9,7 @@ const router = express.Router();
 router.patch("/like", SongController.likePatch);
 router.patch("/favorite", SongController.favoritePatch);
 router.get("/favorite", SongController.favorite);
+router.get("/search/result", SongController.search);
 router.get("/detail/:slugSong", SongController.detail);
 router.get("/:slugTopic", SongController.viewSong);
 
